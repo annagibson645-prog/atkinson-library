@@ -64,3 +64,7 @@ function go(){var v=q.value.toLowerCase(),shown=0;
  s.forEach(function(li){if(o.value==='order'&&li.dataset.book!==lastb){lastb=li.dataset.book;var g=document.createElement('li');g.className='grp';g.innerHTML='<h3></h3>';g.firstChild.textContent=lastb;l.appendChild(g)}l.appendChild(li);var ok=(!v||li.textContent.toLowerCase().indexOf(v)>-1)&&(!b.value||li.dataset.book===b.value)&&(!t.value||li.dataset.theme===t.value);li.hidden=!ok;if(ok)shown++});
  n.textContent=shown+' skill'+(shown===1?'':'s')+' shown'}
 [q,b,t,o].forEach(function(e){e.addEventListener('input',go)});go()})();
+(function(){var e=document.getElementById('exp'),c=document.getElementById('col');if(!e)return;
+function all(open){document.querySelectorAll('#skl .skill:not([hidden]) details').forEach(function(d){d.open=open})}
+e.addEventListener('click',function(){all(true)});c.addEventListener('click',function(){all(false)});
+var q=document.getElementById('sq');if(q)q.addEventListener('input',function(){if(q.value.trim().length>2)all(true)})})();
