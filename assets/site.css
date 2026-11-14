@@ -1,5 +1,6 @@
 :root{--paper:#e9ecf3;--paper2:#dfe3ee;--ink:#121530;--soft:#4a4f6b;--rule:#c3c9da;--brass:#8f6614;--brassbg:#a97c1f;--onbrass:#fff;--link:#23407a;--fs:1.15rem}
-@media (prefers-color-scheme:dark){:root{--paper:#0f1226;--paper2:#171b36;--ink:#e6e8f2;--soft:#a3a9c4;--rule:#2b3052;--brass:#dbae52;--brassbg:#dbae52;--onbrass:#14162c;--link:#9db6ee}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0f1226;--paper2:#171b36;--ink:#e6e8f2;--soft:#a3a9c4;--rule:#2b3052;--brass:#dbae52;--brassbg:#dbae52;--onbrass:#14162c;--link:#9db6ee}}
+:root[data-theme="dark"]{--paper:#0f1226;--paper2:#171b36;--ink:#e6e8f2;--soft:#a3a9c4;--rule:#2b3052;--brass:#dbae52;--brassbg:#dbae52;--onbrass:#14162c;--link:#9db6ee}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:400 1.05rem/1.6 "Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
@@ -79,3 +80,32 @@ select{width:100%;padding:11px 12px;font:inherit;background:var(--paper2);color:
 .skill .sn{font:500 1.2rem/1.3 "Literata",serif}.skill summary:hover .sn{text-decoration:underline;text-decoration-color:var(--brass)}
 .skill .sm{color:var(--soft);font-size:.9rem}.skill details[open]{padding-bottom:22px}.skill .src{margin-top:14px}
 .skact{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.skact #skn{margin-right:auto}.btn.sm{padding:6px 14px;font-size:.92rem}
+/* toggles: one icon, one motion */
+.tg>summary{list-style:none;cursor:pointer;position:relative}.tg>summary::-webkit-details-marker{display:none}
+.skill details>summary::after,.skill details[open]>summary::after{content:"+";transition:transform .35s cubic-bezier(.3,.8,.2,1),color .2s}
+.skill details[open]>summary::after{transform:rotate(135deg)}
+.tg{overflow:hidden}
+.tg[open]>summary .sn{color:var(--brass)}
+.sec{border-top:1px solid var(--rule);margin:1.6em 0 0}.sec>summary{padding:12px 40px 12px 0}
+.sec>summary h3{margin:0;font-size:1.3em;transition:color .25s}.sec[open]>summary h3{color:var(--brass)}.sec>summary:hover h3{text-decoration:underline;text-decoration-color:var(--brass)}
+.sec>summary::after{content:"+";position:absolute;right:4px;top:6px;font:400 1.7rem/1.5 "Instrument Sans",sans-serif;color:var(--brass);transition:transform .35s cubic-bezier(.3,.8,.2,1)}
+.sec[open]>summary::after{transform:rotate(135deg)}
+.tgb{padding-bottom:6px}
+#secall{background:transparent;color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:4px 12px;font:600 .95rem "Instrument Sans",sans-serif;cursor:pointer}#secall:hover{border-color:var(--brass)}
+@media (prefers-reduced-motion:reduce){.skill details>summary::after,.sec>summary::after{transition:none}}
+
+.themebtn{background:transparent;border:1px solid var(--rule);color:var(--ink);width:36px;height:36px;border-radius:50%;display:inline-grid;place-items:center;cursor:pointer;transition:transform .5s cubic-bezier(.3,.8,.2,1),border-color .2s}
+.themebtn:hover{border-color:var(--brass)}.themebtn svg{transition:transform .5s cubic-bezier(.3,.8,.2,1)}
+:root[data-theme="dark"] .themebtn svg{transform:rotate(180deg)}
+.top nav{align-items:center}
+/* spine: connected pulsing nodes beside each heading on the home page */
+.contents dl{padding-left:46px;position:relative}
+.contents dl>div{position:relative;--c:var(--brass)}
+.contents dl>div:nth-child(1){--c:#d19a1f}.contents dl>div:nth-child(2){--c:#1fa39a}.contents dl>div:nth-child(3){--c:#7b5cf0}
+.contents dl>div:nth-child(4){--c:#e0487f}.contents dl>div:nth-child(5){--c:#3d86e0}.contents dl>div:nth-child(6){--c:#4fb35e}
+.contents dl>div::before{content:"";position:absolute;left:-46px;top:23px;width:14px;height:14px;border-radius:50%;background:var(--c);z-index:1;animation:pulse 2.6s ease-out infinite;animation-delay:calc(var(--k,0)*.45s)}
+.contents dl>div::after{content:"";position:absolute;left:-40px;top:30px;width:2px;height:100%;background:var(--rule)}
+.contents dl>div:last-child::after{display:none}
+.contents dl>div:nth-child(2){--k:1}.contents dl>div:nth-child(3){--k:2}.contents dl>div:nth-child(4){--k:3}.contents dl>div:nth-child(5){--k:4}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 65%,transparent)}70%,100%{box-shadow:0 0 0 14px color-mix(in srgb,var(--c) 0%,transparent)}}
+@media (prefers-reduced-motion:reduce){.contents dl>div::before{animation:none}}

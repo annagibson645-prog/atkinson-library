@@ -1,0 +1,17 @@
+:root{--paper:#f4f5f1;--paper2:#e8ebe4;--ink:#1b2733;--soft:#52606d;--rule:#c9d1c9;--brass:#2358b0;--brassbg:#2358b0;--onbrass:#fff;--link:#2358b0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0f1820;--paper2:#16222d;--ink:#e1e8ee;--soft:#9aa9b6;--rule:#27384a;--brass:#6fb1ff;--brassbg:#6fb1ff;--onbrass:#0b1118;--link:#8cc2ff}}
+:root[data-theme="dark"]{--paper:#0f1820;--paper2:#16222d;--ink:#e1e8ee;--soft:#9aa9b6;--rule:#27384a;--brass:#6fb1ff;--brassbg:#6fb1ff;--onbrass:#0b1118;--link:#8cc2ff}
+
+body.v3{font-family:"IBM Plex Sans",sans-serif;background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);background-size:28px 28px;background-position:-1px -1px}
+.v3 h1,.v3 h2,.v3 h3,.v3 .lede,.v3 .epi,.v3 .list .t,.v3 .toc .t,.v3 .sn{font-family:"IBM Plex Serif",serif;font-weight:500}
+.v3 .facts,.v3 .kicker,.v3 .m,.v3 .sm,.v3 .src,.v3 .crumb{font-family:"IBM Plex Mono",monospace;font-size:.82rem}
+.v3 .top{position:fixed;left:0;top:0;bottom:0;width:210px;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:28px;padding:28px 22px;background:var(--paper2);border-right:2px solid var(--ink);z-index:4;max-width:none;margin:0}
+.v3 .top nav{flex-direction:column;gap:10px;align-items:flex-start}.v3 .top nav a{font-family:"IBM Plex Mono",monospace;font-size:.9rem}
+.v3 main,.v3 .foot{margin-left:210px;max-width:none}.v3 .wrap{margin-left:0;max-width:880px;padding-left:44px}
+.v3 .hero h1{font-size:clamp(2.4rem,5vw,4rem)}.v3 .herogrid{grid-template-columns:1fr 260px}.v3 .rings{max-width:260px}
+.v3 .btn{border-radius:2px}.v3 .list a,.v3 .toc a{background:color-mix(in srgb,var(--paper) 70%,transparent)}
+.v3 .skill,.v3 .paths li,.v3 .theme{background:color-mix(in srgb,var(--paper) 85%,transparent)}
+@media (max-width:900px){.v3 .top{position:static;width:auto;flex-direction:row;border-right:0;border-bottom:2px solid var(--ink)}.v3 .top nav{flex-direction:row;flex-wrap:wrap}.v3 main,.v3 .foot{margin-left:0}.v3 .wrap{padding-left:20px}}
+
+.vswitch{max-width:1040px;margin:0 auto;padding:0 20px 56px;font:500 .92rem "Instrument Sans",system-ui,sans-serif;color:var(--soft);display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center}
+.vswitch a{color:var(--ink)}.vswitch a[aria-current]{font-weight:700;text-decoration:none;color:var(--brass)}
