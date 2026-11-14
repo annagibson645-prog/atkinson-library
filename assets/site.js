@@ -33,7 +33,7 @@ var res=document.getElementById('resume');
 if(res){var l=get('al-last');if(l){try{var o=JSON.parse(l);res.innerHTML='Continue: <a href="'+root+'b/'+o.b+'/'+o.n+'.html"></a>';res.querySelector('a').textContent=o.bt+', '+o.ct;res.hidden=false}catch(e){}}}
 // library filter
 var f=document.getElementById('f');
-if(f)f.addEventListener('input',function(){var v=f.value.toLowerCase();document.querySelectorAll('.theme').forEach(function(s){var any=false;s.querySelectorAll('li').forEach(function(li){var ok=li.textContent.toLowerCase().indexOf(v)>-1;li.hidden=!ok;if(ok)any=true});s.hidden=!any})});
+if(f)f.addEventListener('input',function(){var v=f.value.toLowerCase();document.querySelectorAll('.theme').forEach(function(s){var any=false;s.querySelectorAll('li').forEach(function(li){var ok=li.textContent.toLowerCase().indexOf(v)>-1;li.hidden=!ok;if(ok)any=true});s.hidden=!any});if(v)document.querySelectorAll('.tsec:not([hidden])').forEach(function(d){if(window.alToggle)alToggle(d,true)})});
 // search
 var sf=document.getElementById('sf');
 if(sf){
@@ -82,7 +82,7 @@ window.alToggle=function(d,open){
  else{var end=sh(d);
   if(body)body.animate({opacity:[1,0],transform:['none','translateY(-6px)']},{duration:240,easing:ease});
   d._a=d.animate({height:[start+'px',end+'px']},{duration:300,easing:ease});
-  d._a.onfinish=function(){d.open=false;d._a=null}}
+  var an=d._a;an.onfinish=function(){d.open=false;d._a=null};setTimeout(function(){if(d.open&&d._a===an){an.cancel();d.open=false;d._a=null}},520)}
 };
 document.addEventListener('click',function(e){var s=e.target.closest&&e.target.closest('.tg>summary');if(!s)return;if(e.target.closest('a'))return;e.preventDefault();alToggle(s.parentNode)});
 var ex=document.getElementById('exp'),co=document.getElementById('col');
@@ -96,3 +96,5 @@ if(sa&&secs.length){sa.hidden=false;sa.addEventListener('click',function(){var a
 function eff(){var t=document.documentElement.getAttribute('data-theme');if(t)return t;return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}
 b.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('al-theme',n)}catch(e){}});
 })();
+
+(function(){var h=location.hash.slice(1);if(!h)return;var t=document.getElementById(h);if(t&&t.classList.contains('tg'))t.open=true})();

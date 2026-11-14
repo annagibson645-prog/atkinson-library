@@ -109,3 +109,9 @@ select{width:100%;padding:11px 12px;font:inherit;background:var(--paper2);color:
 .contents dl>div:nth-child(2){--k:1}.contents dl>div:nth-child(3){--k:2}.contents dl>div:nth-child(4){--k:3}.contents dl>div:nth-child(5){--k:4}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 65%,transparent)}70%,100%{box-shadow:0 0 0 14px color-mix(in srgb,var(--c) 0%,transparent)}}
 @media (prefers-reduced-motion:reduce){.contents dl>div::before{animation:none}}
+
+.tsec{display:block;border-top:2px solid var(--ink);padding:0;margin-top:14px}.tsec>summary{padding:22px 52px 22px 0;display:block}
+.tsec .th{display:block}.tsec .h{display:block;font:500 1.75rem/1.2 "Literata",serif;transition:color .25s}.tsec .d{display:block;color:var(--soft);margin:4px 0 2px;max-width:60ch}
+.tsec[open] .h{color:var(--brass)}.tsec>summary:hover .h{text-decoration:underline;text-decoration-color:var(--brass)}
+.tsec>summary::after{content:"+";position:absolute;right:4px;top:20px;font:400 2rem/1 "Instrument Sans",sans-serif;color:var(--brass);transition:transform .35s cubic-bezier(.3,.8,.2,1)}
+.tsec[open]>summary::after{transform:rotate(135deg)}
