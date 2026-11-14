@@ -60,6 +60,7 @@ function go(){var v=q.value.toLowerCase(),shown=0;
   if(m==='title')return a.dataset.title.localeCompare(c.dataset.title);
   if(m==='short')return a.dataset.words-c.dataset.words;if(m==='long')return c.dataset.words-a.dataset.words;
   return a.dataset.order-c.dataset.order});
- s.forEach(function(li){l.appendChild(li);var ok=(!v||li.textContent.toLowerCase().indexOf(v)>-1)&&(!b.value||li.dataset.book===b.value)&&(!t.value||li.dataset.theme===t.value);li.hidden=!ok;if(ok)shown++});
+ [].slice.call(l.querySelectorAll('.grp')).forEach(function(g){g.remove()});var lastb=null;
+ s.forEach(function(li){if(o.value==='order'&&li.dataset.book!==lastb){lastb=li.dataset.book;var g=document.createElement('li');g.className='grp';g.innerHTML='<h3></h3>';g.firstChild.textContent=lastb;l.appendChild(g)}l.appendChild(li);var ok=(!v||li.textContent.toLowerCase().indexOf(v)>-1)&&(!b.value||li.dataset.book===b.value)&&(!t.value||li.dataset.theme===t.value);li.hidden=!ok;if(ok)shown++});
  n.textContent=shown+' skill'+(shown===1?'':'s')+' shown'}
 [q,b,t,o].forEach(function(e){e.addEventListener('input',go)});go()})();

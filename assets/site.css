@@ -71,3 +71,4 @@ mark{background:#f3d98a;color:#111;padding:0 2px;border-radius:2px}
 select{width:100%;padding:11px 12px;font:inherit;background:var(--paper2);color:var(--ink);border:1px solid var(--rule);border-radius:6px}
 .skills{list-style:none;padding:0;margin:8px 0 80px}.skill{border-top:2px solid var(--ink);padding:22px 0 26px}.skill h2{font-size:1.35rem;margin:0 0 10px}
 .prose.sk{font-size:1.02rem;line-height:1.7}.src{margin:10px 0 0;color:var(--soft);font-size:.93rem}
+.grp h3{font:600 1rem "Instrument Sans",sans-serif;color:var(--brass);margin:36px 0 0;padding-bottom:4px}.grp[hidden]{display:none}
