@@ -98,3 +98,5 @@ b.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark';docume
 })();
 
 (function(){var h=location.hash.slice(1);if(!h)return;var t=document.getElementById(h);if(t&&t.classList.contains('tg'))t.open=true})();
+
+(function(){document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.jump a');if(!a)return;var t=document.querySelector(a.getAttribute('href'));if(t&&t.tagName==='DETAILS'&&!t.open)t.open=true})})();

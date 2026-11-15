@@ -115,3 +115,27 @@ select{width:100%;padding:11px 12px;font:inherit;background:var(--paper2);color:
 .tsec[open] .h{color:var(--brass)}.tsec>summary:hover .h{text-decoration:underline;text-decoration-color:var(--brass)}
 .tsec>summary::after{content:"+";position:absolute;right:4px;top:20px;font:400 2rem/1 "Instrument Sans",sans-serif;color:var(--brass);transition:transform .35s cubic-bezier(.3,.8,.2,1)}
 .tsec[open]>summary::after{transform:rotate(135deg)}
+
+/* readability */
+h1,h2,h3{font-weight:700}
+.prose{font-size:var(--fs);line-height:1.85}
+.prose p{margin:0 0 1.45em}
+.chapter .prose>p:first-child{font-size:1.08em;color:var(--ink)}
+.prose h3{font-weight:700;font-size:1.35em;margin:0;letter-spacing:-.01em}
+.prose strong{font-weight:700}
+.prose .step{border-left:4px solid var(--brass);padding:.5em 0 .5em 1em;margin:1.7em 0 1.5em;background:linear-gradient(90deg,color-mix(in srgb,var(--brass) 9%,transparent),transparent)}
+.prose .step strong{color:var(--brass);display:block;font:700 1.02em "Instrument Sans",sans-serif;margin-bottom:.25em}
+.prose ol.pts,.prose ul.pts{margin:0 0 1.6em;padding:0;list-style:none;counter-reset:pt}
+.prose .pts li{position:relative;padding:.15em 0 .15em 2.2em;margin:0 0 .65em;counter-increment:pt}
+.prose ol.pts li::before{content:counter(pt);position:absolute;left:0;top:.2em;width:1.6em;height:1.6em;border-radius:50%;background:var(--brass);color:var(--onbrass);font:700 .8em/1.6em "Instrument Sans",sans-serif;text-align:center}
+.prose ul.pts li::before{content:"";position:absolute;left:.45em;top:.78em;width:.55em;height:.55em;border-radius:50%;background:var(--brass)}
+.jump{margin:0 0 2.2em;padding:1em 1.2em;border:1px solid var(--rule);border-radius:10px;background:var(--paper2)}
+.jump strong{display:block;margin-bottom:.4em;font-family:"Instrument Sans",sans-serif}
+.jump ol{margin:0;padding-left:1.3em;columns:2;column-gap:2em}.jump li{margin:.25em 0;break-inside:avoid}.jump a{text-decoration:none}.jump a:hover{text-decoration:underline}
+@media (max-width:600px){.jump ol{columns:1}}
+.sec{margin:2.2em 0 0}.sec>summary h3{font-size:1.45em}.sec>.tgb{padding-top:.4em}
+.skill .prose.sk{line-height:1.8}.skill .sn{font-weight:700}
+.list .t,.toc .t,.results a{font-weight:700}.contents dt{font-weight:700}.tsec .h{font-weight:700}
+.chapter{max-width:700px}.chead h1{font-weight:700}
+.jump>summary{padding:0;display:flex;gap:10px;align-items:baseline}.jump>summary::after{content:"+";margin-left:auto;font:400 1.5rem/1 "Instrument Sans",sans-serif;color:var(--brass);position:static;transition:transform .35s cubic-bezier(.3,.8,.2,1)}
+.jump[open]>summary::after{transform:rotate(135deg)}.jump strong{margin:0}.jump .tgb{padding-top:.6em}
