@@ -72,7 +72,17 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
       order.forEach(function (b, i) { L.appendChild(group('b' + b, b, 'Techniques from this book, in the order they appear.', seen[b], i)); });
     } else vis.forEach(function (x) { x.style.setProperty('--i', 0); L.appendChild(x); });
     cnt.textContent = vis.length + ' technique' + (vis.length === 1 ? '' : 's') + ' shown';
+    renderActive();
     $$('.pchip').forEach(function (c) { c.classList.toggle('on', c.dataset.p === purpose); });
+  }
+  function renderActive() {
+    var box = document.getElementById('activef'), fc = document.getElementById('fcount'); if (!box) return; box.innerHTML = ''; var n = 0;
+    function chip(label, clear) { var b = el('button', 'af', label); b.type = 'button'; b.setAttribute('aria-label', 'Remove filter: ' + label); b.addEventListener('click', function () { clear(); render(); }); box.appendChild(b); n++; }
+    if (purpose) chip((pmap[purpose] || {}).n || purpose, function () { purpose = ''; });
+    if (lv.value !== '') chip(['Beginner', 'Intermediate', 'Advanced'][+lv.value], function () { lv.value = ''; });
+    if (bk.value) chip(bk.value, function () { bk.value = ''; });
+    if (pn.checked) chip('Alone only', function () { pn.checked = false; });
+    if (fc) { fc.hidden = !n; fc.textContent = n; }
   }
   [q, lv, bk, od, pn].forEach(function (e) { e.addEventListener('input', render); e.addEventListener('change', render); });
   $$('.pchip').forEach(function (c) { c.addEventListener('click', function () { purpose = c.dataset.p; if (purpose) openG['p' + purpose] = true; render(); }); });
@@ -153,9 +163,16 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
     st.textContent = list.length ? list.length + ' chapter' + (list.length > 1 ? 's' : '') + ' match, best first' + (p.phrases.length ? ' (phrase checked as results load)' : '') : 'No chapters match. Try a shorter word.';
     if (list.length) showMore();
   }
-  f.addEventListener('submit', function (e) { e.preventDefault(); history.replaceState(null, '', '?q=' + encodeURIComponent(inp.value)); run(inp.value); });
+  function recent() { try { return JSON.parse(localStorage.getItem('al-recent') || '[]'); } catch (e) { return []; } }
+  function paintRecent() { var l = recent(), box = document.getElementById('recentlist'), wrap = document.getElementById('recent'); if (!box) return; box.innerHTML = ''; l.forEach(function (x) { var b = el('button', 'pchip', x); b.type = 'button'; b.dataset.q = x; box.appendChild(b); }); wrap.hidden = !l.length; }
+  function remember(q) { var l = recent().filter(function (x) { return x !== q; }); l.unshift(q); try { localStorage.setItem('al-recent', JSON.stringify(l.slice(0, 6))); } catch (e) {} paintRecent(); }
+  function ready(fn) { if (window.IDX) return fn(); st.textContent = 'Loading the search index...'; var t = setInterval(function () { if (window.IDX) { clearInterval(t); fn(); } }, 120); setTimeout(function () { clearInterval(t); }, 15000); }
+  function go(q) { q = q.trim(); if (!q) return; inp.value = q; history.replaceState(null, '', '?q=' + encodeURIComponent(q)); remember(q); var se = document.getElementById('sempty'); if (se) se.hidden = true; ready(function () { run(q); }); }
+  document.addEventListener('click', function (e) { var c = e.target.closest('.pchip[data-q]'); if (c) go(c.dataset.q); });
+  paintRecent();
+  f.addEventListener('submit', function (e) { e.preventDefault(); go(inp.value); });
   more.addEventListener('click', showMore);
-  var u = new URLSearchParams(location.search).get('q'); if (u) { inp.value = u; var go = function () { run(u); }; if (window.IDX) go(); else window.addEventListener('load', go); }
+  var u = new URLSearchParams(location.search).get('q'); if (u) { inp.value = u; var se0 = document.getElementById('sempty'); if (se0) se0.hidden = true; ready(function () { run(u); }); }
 })();
 
 /* ---------- chapter: bookmark, notes, listen, highlights ---------- */
@@ -266,21 +283,21 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
   var m = $('#m-last'); if (!m) return;
   function link(h, t) { var a = el('a', null, t); a.href = root + h; return a; }
   function row(cls) { return el('div', cls || 'mrow'); }
-  function empty(t) { return el('p', 'facts', t); }
+  function empty(title, text, href, label) { var d = el('div', 'empty'); d.appendChild(el('strong', null, title)); d.appendChild(el('p', null, text)); var a = link(href, label); a.className = 'btn sm'; d.appendChild(a); return d; }
   /* last */
   var last = jget('al-last', null);
-  if (last) { var r = row(); r.appendChild(link('b/' + last.b + '/' + last.n + '.html', last.bt + ', ' + last.ct)); m.appendChild(r); } else m.appendChild(empty('Nothing yet. Open any chapter and it will appear here.'));
+  if (last) { var r = row(); r.appendChild(link('b/' + last.b + '/' + last.n + '.html', last.bt + ', ' + last.ct)); m.appendChild(r); } else m.appendChild(empty('Nothing here yet', 'Open any chapter and it will appear here.', 'library.html', 'Browse books'));
   var rc = 0; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k.indexOf('al-read-') === 0) rc += jget(k, []).length; }
-  if (rc) m.appendChild(empty(rc + ' chapters read so far.'));
+  if (rc) m.appendChild(el('p', 'facts', rc + ' chapters read so far.'));
   /* trails */
   var tr = $('#m-trails'), fol = jget('al-follow', []), shown = 0, slugs = fol.slice();
   for (i = 0; i < localStorage.length; i++) { k = localStorage.key(i); if (k.indexOf('al-trailinfo-') === 0) { var s = k.slice(13); if (slugs.indexOf(s) < 0) { var inf0 = jget(k, null); if (inf0 && inf0.done > 0) slugs.push(s); } } }
   slugs.forEach(function (s) { var inf = jget('al-trailinfo-' + s, null); var r = row(); r.appendChild(link('start/' + s + '.html', inf ? inf.t : s)); r.appendChild(el('span', 'facts', inf ? ' ' + inf.done + ' of ' + inf.n + ' books finished' + (fol.indexOf(s) > -1 ? ', following' : '') : ' following')); if (inf && inf.next) { r.appendChild(document.createTextNode(' Next: ')); r.appendChild(link(inf.href, inf.next)); } tr.appendChild(r); shown++; });
-  if (!shown) { tr.appendChild(empty('You are not following a trail yet.')); tr.appendChild(link('start.html', 'Choose a trail')); }
+  if (!shown) { tr.appendChild(empty('No trail yet', 'Follow a trail and your next book appears here.', 'start.html', 'Choose a trail')); }
   /* practice */
   function paintPractice() {
     var box = $('#m-practice'); box.innerHTML = ''; var ids = jget('al-practice', []), log = jget('al-plog', {}), today = new Date().toISOString().slice(0, 10), SKD = window.SKD || {};
-    if (!ids.length) { box.appendChild(empty('Add techniques from the Skills page and they will collect here as a daily checklist.')); box.appendChild(link('skills.html', 'Browse skills')); return; }
+    if (!ids.length) { box.appendChild(empty('Your practice is empty', 'Add techniques and they collect here as a daily checklist.', 'skills.html', 'Browse techniques')); return; }
     var doneToday = log[today] || [], c = 0; ids.forEach(function (id) { if (doneToday.indexOf(id) > -1) c++; });
     var streak = 0, d = new Date(); if (!(log[today] && log[today].length)) d.setDate(d.getDate() - 1);
     while (true) { var key = d.toISOString().slice(0, 10); if (log[key] && log[key].length) { streak++; d.setDate(d.getDate() - 1); } else break; }
@@ -297,7 +314,7 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
   window.addEventListener('load', paintPractice); paintPractice();
   /* bookmarks */
   function paintBm() {
-    var box = $('#m-bm'); box.innerHTML = ''; var l = jget('al-bm', []); if (!l.length) { box.appendChild(empty('Use the Bookmark button at the top of any chapter.')); return; }
+    var box = $('#m-bm'); box.innerHTML = ''; var l = jget('al-bm', []); if (!l.length) { box.appendChild(empty('No bookmarks yet', 'Use Bookmark at the top of any chapter.', 'library.html', 'Browse books')); return; }
     l.slice().reverse().forEach(function (x) { var r = row(); r.appendChild(link('b/' + x.b + '/' + x.n + '.html', x.bt + ', ' + x.ct)); var rm = el('button', 'btn ghost sm', 'Remove'); rm.type = 'button'; rm.addEventListener('click', function () { jset('al-bm', jget('al-bm', []).filter(function (y) { return !(y.b === x.b && y.n === x.n); })); paintBm(); }); r.appendChild(rm); box.appendChild(r); });
   }
   paintBm();
@@ -305,7 +322,7 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
   function paintHl() {
     var box = $('#m-hl'); box.innerHTML = ''; var l = jget('al-hl', []), notes = [];
     for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k.indexOf('al-note-') === 0) notes.push(k); }
-    if (!l.length && !notes.length) { box.appendChild(empty('Select any passage in a chapter to highlight it or add a note.')); return; }
+    if (!l.length && !notes.length) { box.appendChild(empty('No highlights or notes yet', 'Select a passage in any chapter to highlight it or add a note.', 'library.html', 'Browse books')); return; }
     l.slice().reverse().forEach(function (h) {
       var r = row('mrow hrow'); r.appendChild(el('blockquote', 'hq', h.t)); if (h.note) r.appendChild(el('p', 'hn', 'Note: ' + h.note));
       r.appendChild(link('b/' + h.b + '/' + h.n + '.html', h.bt + ', ' + h.ct)); r.appendChild(document.createTextNode(' '));
@@ -326,4 +343,34 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
     rd.readAsText(f);
   });
 })();
+})();
+
+(function () {
+'use strict';
+/* SCOPED */
+var root = document.body.getAttribute('data-root') || '';
+function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function el(t, c, txt) { var e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; }
+function $(s, r) { return (r || document).querySelector(s); }
+function $$(s, r) { return [].slice.call((r || document).querySelectorAll(s)); }
+/* ---------- shell: current page, menu, reading settings, trail lead ---------- */
+(function () {
+  var path = location.pathname.split('/').pop() || 'index.html', dir = location.pathname;
+  function cur(a) { var h = a.getAttribute('href') || ''; var f = h.split('/').pop().split('#')[0]; if (!f) return false; if (f === 'start.html') return /start/.test(dir) || path === 'start.html'; if (f === 'library.html') return path === 'library.html' || /\/b\//.test(dir); return f === path; }
+  $$('.primary a, .ulink, .tabbar a, .menupanel a').forEach(function (a) { if (cur(a)) a.setAttribute('aria-current', 'page'); });
+  var menu = $('.menu'); if (menu) { document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; }); document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menu.open = false; }); }
+  /* reading settings */
+  var rs = $('#rset'), rp = $('#rpanel'); if (!rs) return;
+  var lh = get('al-lh') || '1.85'; document.documentElement.style.setProperty('--lh', lh); var sel = $('#rlh'); if (sel) { sel.value = lh; sel.addEventListener('change', function () { document.documentElement.style.setProperty('--lh', sel.value); set('al-lh', sel.value); }); }
+  rs.addEventListener('click', function () { var o = rp.hidden; rp.hidden = !o; rs.setAttribute('aria-expanded', o); });
+  function paintTh() { var t = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); $$('[data-th]').forEach(function (b) { b.classList.toggle('on', b.dataset.th === t); }); }
+  $$('[data-th]').forEach(function (b) { b.addEventListener('click', function () { document.documentElement.setAttribute('data-theme', b.dataset.th); set('al-theme', b.dataset.th); paintTh(); }); }); paintTh();
+})();
+(function () {
+  var tp = $('.trailpage'); if (!tp) return;
+  function lead() { $$('.lead', tp).forEach(function (x) { x.classList.remove('lead'); }); var nx = $('.tstage.isnext', tp); if (!nx) return; var pv = nx.previousElementSibling; if (!pv) return; pv.classList.add('lead'); if (pv.classList.contains('band') && pv.previousElementSibling) pv.previousElementSibling.classList.add('lead'); }
+  [60, 400, 1200].forEach(function (t) { setTimeout(lead, t); }); tp.addEventListener('change', function () { setTimeout(lead, 60); });
+})();
+
 })();

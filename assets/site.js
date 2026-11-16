@@ -3,7 +3,7 @@ var root=document.body.getAttribute('data-root')||'';
 function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 // reading size
-var size=parseFloat(get('al-size'))||1.15;
+var size=parseFloat(get('al-size'))||1.125;
 document.documentElement.style.setProperty('--fs',size+'rem');
 document.querySelectorAll('[data-size]').forEach(function(b){b.addEventListener('click',function(){
  size=Math.min(1.7,Math.max(.95,size+parseInt(b.getAttribute('data-size'))*.1));
@@ -30,7 +30,7 @@ var rb=document.querySelector('[data-resume]');
 if(rb){var bk=rb.getAttribute('data-resume'),n=get('al-book-'+bk);if(n&&+n>0){rb.href=n+'.html';rb.hidden=false;rb.textContent='Continue at chapter '+n}}
 // home: continue reading
 var res=document.getElementById('resume');
-if(res){var l=get('al-last');if(l){try{var o=JSON.parse(l);res.innerHTML='Continue: <a href="'+root+'b/'+o.b+'/'+o.n+'.html"></a>';res.querySelector('a').textContent=o.bt+', '+o.ct;res.hidden=false}catch(e){}}}
+if(res){var l=get('al-last');if(l){try{var o=JSON.parse(l);res.innerHTML='Continue where you left off: <a href="'+root+'b/'+o.b+'/'+o.n+'.html"></a>';res.querySelector('a').textContent=o.bt+', '+o.ct;res.hidden=false}catch(e){}}}
 // library filter
 var f=document.getElementById('f');
 if(f)f.addEventListener('input',function(){var v=f.value.toLowerCase();document.querySelectorAll('.theme').forEach(function(s){var any=false;s.querySelectorAll('li').forEach(function(li){var ok=li.textContent.toLowerCase().indexOf(v)>-1;li.hidden=!ok;if(ok)any=true});s.hidden=!any});if(v)document.querySelectorAll('.tsec:not([hidden])').forEach(function(d){if(window.alToggle)alToggle(d,true)})});
