@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://annagibson645-prog.github.io/atkinson-library/sitemap.xml
