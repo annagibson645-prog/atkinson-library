@@ -155,3 +155,29 @@ h1,h2,h3{font-weight:700}
 .why{margin:.4rem 0 .8rem;max-width:56ch}.sact{display:flex;gap:12px 18px;align-items:center;flex-wrap:wrap;margin:0}.sklink{font-size:.95rem}
 .done{display:inline-flex;gap:8px;align-items:center;font-weight:600;cursor:pointer}.done input{width:18px;height:18px;accent-color:var(--brass)}
 @media (prefers-reduced-motion:reduce){.stage.isnext .node{animation:none}}
+
+/* trails */
+.lvnav{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}.lvnav a{border:1px solid var(--rule);border-radius:99px;padding:6px 16px;text-decoration:none;color:var(--ink);font-weight:600}.lvnav a:hover{border-color:var(--brass)}
+.level{margin-top:48px;scroll-margin-top:20px}.level>h2{font-size:2rem;margin:0}.level>.lede{margin:.2em 0 0}
+.pcards.feat{margin:28px 0 0}.pcards.feat .pcard{border-top:4px solid var(--brass)}
+.pcard .chip{display:inline-block;background:var(--brassbg);color:var(--onbrass);border-radius:99px;font:700 .78rem "Instrument Sans",sans-serif;padding:2px 10px;margin-bottom:6px}
+.pre{margin:.2rem 0 .6rem;font-weight:600}
+.trail{list-style:none;margin:30px 0 36px;padding:0 0 0 130px;position:relative}
+.trail svg.tline{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.tline .base{fill:none;stroke:var(--rule);stroke-width:4;stroke-dasharray:2 9;stroke-linecap:round}
+.tline .walk{fill:none;stroke:var(--brass);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.3,.8,.2,1)}
+.tstage{position:relative;padding:0 0 46px}
+.tnode{position:absolute;top:-2px;width:52px;height:52px;display:grid;place-items:center;z-index:1;background:var(--paper);border-radius:50%}
+.tstage.l .tnode{left:-122px}.tstage.r .tnode{left:-62px}
+.tnode svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.tnode .bg{fill:none;stroke:var(--rule);stroke-width:4}.tnode .rg{fill:none;stroke:var(--brass);stroke-width:4.5;stroke-linecap:round;stroke-dasharray:0 100;transition:stroke-dasharray .8s cubic-bezier(.3,.8,.2,1)}
+.tnode b{font:700 1.05rem "Instrument Sans",sans-serif;color:var(--ink);position:relative}
+.tstage.isdone .tnode{background:var(--brass)}.tstage.isdone .tnode b{color:var(--onbrass)}.tstage.isdone .tnode .bg{stroke:var(--brass)}.tstage.isdone .tnode .rg{stroke:var(--onbrass)}
+.tstage.isnext .tnode{animation:pulse 2.4s ease-out infinite;--c:var(--brass)}
+.tbody h2{margin:.1rem 0 .2rem;font-size:1.5rem}.tbody h2 a{color:var(--ink)}.tstage.isdone .tbody h2 a{opacity:.7}
+.sprog{display:flex;align-items:center;gap:12px;margin:.2rem 0 .8rem}.pbar.sm{height:8px;width:160px;margin:0;flex:none}.ptxt{font-size:.92rem;color:var(--soft)}
+.band{display:flex;align-items:center;gap:14px;margin:6px 0 26px;font:700 1.05rem "Instrument Sans",sans-serif;color:var(--brass);position:relative;z-index:1}.band::after{content:"";flex:1;height:2px;background:var(--rule)}
+@media (max-width:560px){.trail{padding-left:96px}.tstage.l .tnode{left:-92px}.tstage.r .tnode{left:-44px}.pbar.sm{width:110px}}
+@media (prefers-reduced-motion:reduce){.tstage.isnext .tnode{animation:none}.tline .walk,.tnode .rg{transition:none}}
+.toc li.read .num::after{content:" \2713";color:var(--brass)}.toc li.read .t{color:var(--soft)}
+#bprog{margin:.2rem 0 0}

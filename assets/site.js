@@ -117,3 +117,59 @@ if(rm){var key='al-path-'+rm.dataset.path,n=+rm.dataset.n,done=[];
 var sb=document.getElementById('sb');
 if(sb){var q=new URLSearchParams(location.search).get('b');if(q){sb.value=q;sb.dispatchEvent(new Event('input'))}}
 })();
+
+/* ---- reading progress: chapters read, trails ---- */
+(function(){
+function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function arr(k){try{return JSON.parse(get(k)||'[]')}catch(e){return[]}}
+var root=document.body.getAttribute('data-root')||'';
+// 1. chapter pages: record chapters actually read
+var ch=document.querySelector('.chapter');
+if(ch){var slug=ch.dataset.book,num=+ch.dataset.n,rk='al-read-'+slug;
+ function mark(){var r=arr(rk);if(r.indexOf(num)<0){r.push(num);set(rk,JSON.stringify(r))}}
+ function chk(){var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;if(max<=40||h.scrollTop/max>=.85)mark()}
+ window.addEventListener('scroll',chk,{passive:true});setTimeout(chk,1500);
+ var pn=document.querySelector('.pn');if(pn)pn.addEventListener('click',mark)}
+// 2. book contents page: ticks and a count
+var toc=document.querySelector('.toc');
+if(toc){var bs=(location.pathname.match(/\/b\/([^\/]+)\//)||[])[1];var r=arr('al-read-'+bs);
+ [].forEach.call(toc.querySelectorAll('li'),function(li){var a=li.querySelector('a');var n=parseInt(a.getAttribute('href'));if(r.indexOf(n)>-1)li.classList.add('read')});
+ var f=document.querySelector('.bookhead .facts');if(f&&r.length){var p=document.createElement('p');p.className='facts';p.id='bprog';p.textContent=r.length+' of '+toc.querySelectorAll('li').length+' chapters read';f.after(p)}}
+// 3. trail pages
+var tp=document.querySelector('.trailpage');
+if(tp){var stages=[].slice.call(tp.querySelectorAll('.tstage')),trail=tp.querySelector('.trail'),svgNS='http://www.w3.org/2000/svg',svg=null,segs=[];
+ function frac(st){var slug=st.dataset.slug,tot=+st.dataset.total;if(get('al-done-'+slug)==='1')return 1;var r=arr('al-read-'+slug).length;return Math.min(1,r/tot)}
+ function paint(){var doneN=0,nx=-1;
+  stages.forEach(function(st,i){var f=frac(st),slug=st.dataset.slug,tot=+st.dataset.total,rd=Math.round(f*tot);
+   var isDone=f>=1;if(isDone)doneN++;else if(nx<0)nx=i;
+   st.classList.toggle('isdone',isDone);st.querySelector('.rg').style.strokeDasharray=(f*100)+' 100';
+   st.querySelector('.pbar i').style.width=(f*100)+'%';
+   st.querySelector('.ptxt').textContent=isDone?'Finished':(get('al-done-'+slug)==='1'?'Finished':(arr('al-read-'+slug).length+' of '+tot+' chapters read'));
+   var cb=st.querySelector('[data-done]');cb.checked=get('al-done-'+slug)==='1';
+   var a=st.querySelector('.btn');var last=get('al-book-'+slug);if(f>0&&!isDone&&last){a.href=a.dataset.pre+last+'.html';a.textContent='Continue at chapter '+last}else if(isDone){a.textContent='Read again';a.href=a.dataset.pre+'1.html'}else{a.textContent='Start reading'}});
+  stages.forEach(function(st,i){st.classList.toggle('isnext',i===nx)});
+  segs.forEach(function(sg,i){var on=stages[i]&&stages[i].classList.contains('isdone');sg.style.strokeDashoffset=on?0:sg._len});
+  document.getElementById('pcount').textContent=doneN+' of '+stages.length+' books finished'+(doneN===stages.length?'. Trail complete.':'');
+  var follows=arr('al-follow'),slugP=tp.dataset.path;
+  var info={t:tp.dataset.ptitle,done:doneN,n:stages.length,next:nx>-1?stages[nx].dataset.title:'',href:nx>-1?'b/'+stages[nx].dataset.slug+'/'+(get('al-book-'+stages[nx].dataset.slug)||1)+'.html':''};
+  set('al-trailinfo-'+slugP,JSON.stringify(info))}
+ function draw(){if(svg)svg.remove();svg=document.createElementNS(svgNS,'svg');svg.setAttribute('class','tline');svg.setAttribute('width',trail.offsetWidth);svg.setAttribute('height',trail.offsetHeight);
+  var tr=trail.getBoundingClientRect(),pts=stages.map(function(st){var r=st.querySelector('.tnode').getBoundingClientRect();return[r.left-tr.left+r.width/2,r.top-tr.top+r.height/2]});
+  segs=[];for(var i=0;i<pts.length-1;i++){var a=pts[i],b=pts[i+1],my=(a[1]+b[1])/2,d='M'+a[0]+' '+a[1]+' C'+a[0]+' '+my+' '+b[0]+' '+my+' '+b[0]+' '+b[1];
+   var base=document.createElementNS(svgNS,'path');base.setAttribute('d',d);base.setAttribute('class','base');svg.appendChild(base);
+   var w=document.createElementNS(svgNS,'path');w.setAttribute('d',d);w.setAttribute('class','walk');svg.appendChild(w);var L=w.getTotalLength();w._len=L;w.style.strokeDasharray=L;w.style.strokeDashoffset=L;segs.push(w)}
+  trail.insertBefore(svg,trail.firstChild);paint()}
+ stages.forEach(function(st){st.querySelector('[data-done]').addEventListener('change',function(e){set('al-done-'+st.dataset.slug,e.target.checked?'1':'0');paint()})});
+ var fb=document.getElementById('follow');
+ function fpaint(){var f=arr('al-follow'),on=f.indexOf(tp.dataset.path)>-1;fb.textContent=on?'Following this trail':'Follow this trail';fb.classList.toggle('ghost',on)}
+ fb.addEventListener('click',function(){var f=arr('al-follow'),k=f.indexOf(tp.dataset.path);if(k<0)f.push(tp.dataset.path);else f.splice(k,1);set('al-follow',JSON.stringify(f));fpaint()});
+ fpaint();draw();window.addEventListener('resize',draw);window.addEventListener('load',draw);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw)}
+// 4. start page chips and home "your trail"
+document.querySelectorAll('.pcard[data-slug]').forEach(function(c){var s=c.dataset.slug,info=null;try{info=JSON.parse(get('al-trailinfo-'+s)||'null')}catch(e){}
+ if(arr('al-follow').indexOf(s)>-1){var chip=document.createElement('span');chip.className='chip';chip.textContent='Following'+(info?': '+info.done+' of '+info.n+' books':'');c.insertBefore(chip,c.firstChild)}
+ else if(info&&info.done>0){var f=c.querySelector('.facts');if(f)f.textContent+=', '+info.done+' of '+info.n+' finished'}});
+var res=document.getElementById('resume');
+if(res){var fl=arr('al-follow');for(var i=0;i<fl.length;i++){var inf=null;try{inf=JSON.parse(get('al-trailinfo-'+fl[i])||'null')}catch(e){}
+ if(inf&&inf.next){res.hidden=false;res.innerHTML='Your trail, <a href="'+root+'start/'+fl[i]+'.html"></a>: <a class="nx" href="'+root+inf.href+'"></a>';res.querySelectorAll('a')[0].textContent=inf.t;res.querySelector('.nx').textContent='next up, '+inf.next;break}}}
+})();
