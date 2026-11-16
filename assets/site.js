@@ -173,3 +173,22 @@ var res=document.getElementById('resume');
 if(res){var fl=arr('al-follow');for(var i=0;i<fl.length;i++){var inf=null;try{inf=JSON.parse(get('al-trailinfo-'+fl[i])||'null')}catch(e){}
  if(inf&&inf.next){res.hidden=false;res.innerHTML='Your trail, <a href="'+root+'start/'+fl[i]+'.html"></a>: <a class="nx" href="'+root+inf.href+'"></a>';res.querySelectorAll('a')[0].textContent=inf.t;res.querySelector('.nx').textContent='next up, '+inf.next;break}}}
 })();
+
+/* fold behaviour, band stats, node click */
+(function(){var tp=document.querySelector('.trailpage');if(!tp)return;
+var stages=[].slice.call(tp.querySelectorAll('.tstage')),bands=[].slice.call(tp.querySelectorAll('.band'));
+function stats(){bands.forEach(function(b){var done=0,tot=0,prev=b.previousElementSibling,n=b.nextElementSibling;
+  while(n&&!n.classList.contains('band')){if(n.classList.contains('tstage')){tot++;if(n.classList.contains('isdone'))done++}n=n.nextElementSibling}
+  b.querySelector('.bstat').textContent=done+' of '+tot+' finished';
+  b.classList.toggle('isdone',!!(prev&&prev.classList.contains('tstage')&&prev.classList.contains('isdone')))})}
+var first=true;
+function sync(){stats();if(first){first=false;stages.forEach(function(st){st.querySelector('details').open=st.classList.contains('isnext')})}}
+// run after the main painter has set isdone/isnext
+setTimeout(sync,0);
+tp.addEventListener('change',function(){setTimeout(stats,0)});
+document.addEventListener('visibilitychange',function(){setTimeout(stats,0)});
+stages.forEach(function(st){st.querySelector('.tnode').addEventListener('click',function(){window.alToggle&&alToggle(st.querySelector('details'))})});
+var ux=document.getElementById('tx'),fc=document.getElementById('tc');
+if(ux)ux.addEventListener('click',function(){stages.forEach(function(st,i){setTimeout(function(){alToggle(st.querySelector('details'),true)},Math.min(i,10)*30)})});
+if(fc)fc.addEventListener('click',function(){stages.forEach(function(st){alToggle(st.querySelector('details'),false)})});
+})();
