@@ -100,3 +100,20 @@ b.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark';docume
 (function(){var h=location.hash.slice(1);if(!h)return;var t=document.getElementById(h);if(t&&t.classList.contains('tg'))t.open=true})();
 
 (function(){document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.jump a');if(!a)return;var t=document.querySelector(a.getAttribute('href'));if(t&&t.tagName==='DETAILS'&&!t.open)t.open=true})})();
+
+/* roadmap progress + skills deep link */
+(function(){
+var rm=document.querySelector('.roadmap');
+if(rm){var key='al-path-'+rm.dataset.path,n=+rm.dataset.n,done=[];
+ try{done=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
+ var boxes=[].slice.call(rm.querySelectorAll('[data-done]')),stages=[].slice.call(rm.querySelectorAll('.stage'));
+ function paint(){var c=0,nx=-1;stages.forEach(function(st,i){var d=done.indexOf(i)>-1;st.classList.toggle('isdone',d);boxes[i].checked=d;if(d)c++;else if(nx<0)nx=i});
+  stages.forEach(function(st,i){st.classList.toggle('isnext',i===nx)});
+  rm.querySelector('.pbar i').style.width=(c/n*100)+'%';rm.querySelector('.pbar').setAttribute('aria-valuenow',c);
+  document.getElementById('pcount').textContent=c+' of '+n+' finished'+(c===n?'. Roadmap complete.':'')}
+ boxes.forEach(function(b,i){b.addEventListener('change',function(){var k=done.indexOf(i);if(b.checked&&k<0)done.push(i);if(!b.checked&&k>-1)done.splice(k,1);try{localStorage.setItem(key,JSON.stringify(done))}catch(e){}paint()})});
+ rm.querySelectorAll('[data-resumeb]').forEach(function(a){var m=null;try{m=localStorage.getItem('al-book-'+a.dataset.resumeb)}catch(e){}if(m&&+m>0){a.href=a.dataset.pre+m+'.html';a.textContent='Continue at chapter '+m}});
+ paint()}
+var sb=document.getElementById('sb');
+if(sb){var q=new URLSearchParams(location.search).get('b');if(q){sb.value=q;sb.dispatchEvent(new Event('input'))}}
+})();

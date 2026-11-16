@@ -139,3 +139,19 @@ h1,h2,h3{font-weight:700}
 .chapter{max-width:700px}.chead h1{font-weight:700}
 .jump>summary{padding:0;display:flex;gap:10px;align-items:baseline}.jump>summary::after{content:"+";margin-left:auto;font:400 1.5rem/1 "Instrument Sans",sans-serif;color:var(--brass);position:static;transition:transform .35s cubic-bezier(.3,.8,.2,1)}
 .jump[open]>summary::after{transform:rotate(135deg)}.jump strong{margin:0}.jump .tgb{padding-top:.6em}
+
+/* roadmaps */
+.pcards{list-style:none;padding:0;margin:32px 0 80px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 36px}
+.pcard{border-top:2px solid var(--ink);padding:20px 0 26px}.pcard h2{margin:0 0 4px;font-size:1.4rem}.pcard h2 a{color:var(--ink);text-decoration:none}.pcard h2 a:hover{text-decoration:underline;text-decoration-color:var(--brass)}
+.pcard .who{color:var(--brass);font-weight:600;margin:0 0 8px}.pcard p{margin:.3rem 0}
+.pbar{height:10px;background:var(--paper2);border:1px solid var(--rule);border-radius:99px;overflow:hidden;margin:18px 0 6px}.pbar i{display:block;height:100%;width:0;background:var(--brassbg);transition:width .6s cubic-bezier(.3,.8,.2,1)}
+.road{list-style:none;margin:28px 0 36px;padding:0 0 0 46px;position:relative}
+.stage{position:relative;padding:0 0 34px}
+.stage .node{position:absolute;left:-46px;top:6px;width:18px;height:18px;border-radius:50%;border:3px solid var(--brass);background:var(--paper);z-index:1;transition:background .3s,transform .3s}
+.stage::after{content:"";position:absolute;left:-38px;top:24px;bottom:-6px;width:2px;background:var(--rule)}.stage:last-child::after{display:none}
+.stage.isdone .node{background:var(--brass)}.stage.isdone .sbody h2 a{text-decoration:line-through;text-decoration-color:var(--brass);opacity:.7}
+.stage.isnext .node{background:var(--brass);animation:pulse 2.4s ease-out infinite;--c:var(--brass)}
+.snum{margin:0;color:var(--brass);font-weight:700;font-size:.9rem}.stage h2{margin:.1rem 0 .2rem;font-size:1.5rem}.stage h2 a{color:var(--ink)}
+.why{margin:.4rem 0 .8rem;max-width:56ch}.sact{display:flex;gap:12px 18px;align-items:center;flex-wrap:wrap;margin:0}.sklink{font-size:.95rem}
+.done{display:inline-flex;gap:8px;align-items:center;font-weight:600;cursor:pointer}.done input{width:18px;height:18px;accent-color:var(--brass)}
+@media (prefers-reduced-motion:reduce){.stage.isnext .node{animation:none}}
