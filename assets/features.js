@@ -27,6 +27,7 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
 (function () {
   var q = document.getElementById('iq'); if (!q) return;
   q.addEventListener('input', function () { var v = q.value.toLowerCase().trim(); $$('.idea').forEach(function (d) { d.hidden = v && d.dataset.name.indexOf(v) < 0; }); });
+  var pf = new URLSearchParams(location.search).get('f'); if (pf) { q.value = pf; q.dispatchEvent(new Event('input')); var first = $$('.idea').filter(function (d) { return !d.hidden; })[0]; if (first) { first.open = true; setTimeout(function () { first.scrollIntoView({ block: 'center' }); }, 250); } }
 })();
 
 /* ---------- skills page ---------- */
@@ -182,7 +183,7 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
   /* bookmark */
   var bm = $('#bm');
   function bmList() { return jget('al-bm', []); }
-  function bmPaint() { var on = bmList().some(function (x) { return x.b === slug && x.n === num; }); bm.setAttribute('aria-pressed', on); bm.textContent = on ? 'Bookmarked' : 'Bookmark'; bm.classList.toggle('on', on); }
+  function bmPaint() { var on = bmList().some(function (x) { return x.b === slug && x.n === num; }); bm.setAttribute('aria-pressed', on); (bm.querySelector('.lbl') || bm).textContent = on ? 'Bookmarked' : 'Bookmark'; bm.classList.toggle('on', on); }
   bm.addEventListener('click', function () {
     var l = bmList(), k = -1; l.forEach(function (x, i) { if (x.b === slug && x.n === num) k = i; });
     if (k > -1) l.splice(k, 1); else l.push({ b: slug, n: num, bt: ch.dataset.btitle, ct: ch.dataset.ctitle, ts: Date.now() });
@@ -251,6 +252,13 @@ if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigato
     }
     btn('Highlight', function () { save(''); });
     btn('Highlight and note', function () { var n = window.prompt('Your note on this passage:', ''); if (n !== null) save(n); });
+    btn('Copy quote', function () {
+      var words = t.split(' '), frag = t.length <= 70 ? encodeURIComponent(t) : encodeURIComponent(words.slice(0, 4).join(' ')) + ',' + encodeURIComponent(words.slice(-4).join(' '));
+      var q = '\u201c' + t + '\u201d\n\u2014 William Walker Atkinson, ' + ch.dataset.btitle + ', ' + ch.dataset.ctitle + '\n' + location.href.split('#')[0] + '#:~:text=' + frag;
+      function done(ok) { if (window.alToast) window.alToast(ok ? 'Quote copied with a link to this spot.' : 'Could not copy. Select the text and copy it instead.'); }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(q).then(function () { done(true); }, function () { done(false); }); else done(false);
+      s.removeAllRanges(); hide();
+    });
     place(rect);
   }
   prose.addEventListener('click', function (e) {
@@ -373,4 +381,197 @@ function $$(s, r) { return [].slice.call((r || document).querySelectorAll(s)); }
   [60, 400, 1200].forEach(function (t) { setTimeout(lead, t); }); tp.addEventListener('change', function () { setTimeout(lead, 60); });
 })();
 
+})();
+
+/* ---------- round 2: palette, welcome, guided practice, trail bar, end card, tips, offline, install ---------- */
+(function () {
+'use strict';
+var root = document.body.getAttribute('data-root') || '';
+function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function jget(k, d) { try { var v = JSON.parse(get(k)); return v == null ? d : v; } catch (e) { return d; } }
+function jset(k, v) { set(k, JSON.stringify(v)); }
+function el(t, c, txt) { var e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; }
+function $(s, r) { return (r || document).querySelector(s); }
+function $$(s, r) { return [].slice.call((r || document).querySelectorAll(s)); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function today() { return new Date().toISOString().slice(0, 10); }
+
+/* toast */
+function toast(msg, actions, ms) {
+  var old = $('.toast'); if (old) old.remove();
+  var t = el('div', 'toast'); t.setAttribute('role', 'status'); t.appendChild(el('span', null, msg));
+  (actions || [{ label: 'OK' }]).forEach(function (a) { var b = el('button', null, a.label); b.type = 'button'; b.addEventListener('click', function () { if (a.fn) a.fn(); t.remove(); }); t.appendChild(b); });
+  document.body.appendChild(t); setTimeout(function () { if (t.parentNode) t.remove(); }, ms || 9000); return t;
+}
+window.alToast = toast;
+function mkdialog(id, title) {
+  var d = el('dialog', 'dlg'); d.id = id; d.setAttribute('aria-labelledby', id + '-t');
+  d.innerHTML = '<div class="dh"><strong id="' + id + '-t"></strong><button type="button" class="x" aria-label="Close">\u00d7</button></div><div class="db"></div>';
+  $('strong', d).textContent = title; $('.x', d).addEventListener('click', function () { d.close(); });
+  d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+  document.body.appendChild(d); return d;
+}
+var canDialog = typeof HTMLDialogElement === 'function';
+
+/* shortcut hint */
+var kb = $('.hkbd'); if (kb && /Mac|iPhone|iPad/.test(navigator.platform)) kb.textContent = '\u2318 K';
+
+/* offline bar */
+function offline() { var b = $('.offbar'); if (!navigator.onLine) { if (!b && $('.top')) { b = el('div', 'offbar'); b.innerHTML = 'You are offline. Anything you have opened or saved still works. <a href="' + root + 'mine.html">My library</a>'; $('.top').after(b); } } else if (b) b.remove(); }
+window.addEventListener('online', offline); window.addEventListener('offline', offline); offline();
+
+/* library grid / list */
+(function () {
+  var lw = $('#libwrap'); if (!lw) return;
+  function setMode(m, quiet) { lw.dataset.mode = m; set('al-libmode', m); $$('.seg[data-mode]').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === m); }); if (m === 'grid') $$('#view-theme .tsec, #view-pen .tsec').forEach(function (d) { d.open = true; }); }
+  $$('.seg[data-mode]').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
+  setMode(get('al-libmode') || 'grid');
+})();
+
+/* command palette */
+(function () {
+  if (!canDialog) return;
+  var pal = null, inp, ul, shown = [], sel = 0, TYPES = { P: 'Go to', B: 'Book', C: 'Chapter', T: 'Technique', I: 'Idea', R: 'Trail' }, ORDER = { P: 0, B: 1, R: 2, T: 3, I: 4, C: 5 };
+  function build() {
+    pal = el('dialog', 'dlg'); pal.id = 'pal'; pal.setAttribute('aria-label', 'Quick jump');
+    pal.innerHTML = '<input class="pin" type="search" placeholder="Jump to a book, chapter, technique or idea" aria-label="Quick jump" autocomplete="off"><ul role="listbox" aria-label="Results"></ul><div class="pfoot">Up and down to choose, Enter to open, Esc to close.</div>';
+    document.body.appendChild(pal); inp = $('.pin', pal); ul = $('ul', pal);
+    pal.addEventListener('click', function (e) { if (e.target === pal) pal.close(); });
+    inp.addEventListener('input', function () { sel = 0; render(inp.value); });
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(shown.length - 1, sel + 1); paint(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); paint(); }
+      else if (e.key === 'Enter') { e.preventDefault(); var r = shown[sel]; if (r) location.href = root + r[3]; }
+    });
+  }
+  function render(q) {
+    var toks = q.toLowerCase().split(/\s+/).filter(Boolean), P = window.PAL || [];
+    if (!toks.length) shown = P.filter(function (r) { return r[0] === 'P'; });
+    else {
+      var sc = [];
+      P.forEach(function (r) { var l = r[1].toLowerCase(), h = l + ' ' + r[2].toLowerCase(), s = 0; for (var i = 0; i < toks.length; i++) { if (h.indexOf(toks[i]) < 0) return; s += l.indexOf(toks[i]) === 0 ? 3 : (l.indexOf(toks[i]) > -1 ? 2 : 1); } sc.push([s - ORDER[r[0]] * .1, r]); });
+      sc.sort(function (a, b) { return b[0] - a[0]; }); var cc = 0; shown = [];
+      sc.forEach(function (x) { if (x[1][0] === 'C') { if (cc++ >= 12) return; } if (shown.length < 40) shown.push(x[1]); });
+    }
+    paint();
+  }
+  function paint() {
+    ul.innerHTML = '';
+    if (!shown.length) { var n = el('li'); n.style.padding = '16px'; n.textContent = window.PAL ? 'No matches. Try a shorter word.' : 'Loading...'; ul.appendChild(n); return; }
+    shown.forEach(function (r, i) { var li = el('li'), a = el('a'); a.href = root + r[3]; a.setAttribute('role', 'option'); a.setAttribute('aria-selected', i === sel); a.innerHTML = '<span class="pt1">' + TYPES[r[0]] + '</span><span class="pl">' + esc(r[1]) + '</span><span class="ps">' + esc(r[2]) + '</span>'; li.appendChild(a); ul.appendChild(li); });
+    var cur = $('[aria-selected="true"]', ul); if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
+  function open() {
+    if (!pal) build(); if (pal.open) return; pal.showModal(); inp.value = ''; sel = 0; shown = [];
+    if (window.PAL) render(''); else { paint(); var s = el('script'); s.src = root + 'assets/palette-data.js?v=25'; s.onload = function () { render(inp.value); }; document.head.appendChild(s); }
+    inp.focus();
+  }
+  document.addEventListener('keydown', function (e) {
+    var typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || '')) || e.target.isContentEditable;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); open(); }
+    else if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); open(); }
+  });
+})();
+
+/* first-visit welcome (home only) */
+(function () {
+  if (!canDialog || !$('.hero') || get('al-welcomed')) return;
+  setTimeout(function () {
+    var d = mkdialog('wel', 'Welcome to the library'), b = $('.db', d);
+    b.innerHTML = '<p style="margin:0;color:var(--soft)">Everything William Walker Atkinson wrote, free to read. Three ways to begin:</p><ol class="wsteps"><li><div><b>Pick a trail</b><span>Books in a good order, from beginner to advanced. Your progress is remembered.</span></div></li><li><div><b>Read, listen, highlight</b><span>Open any chapter. Press Listen, or select text to highlight it or copy it as a quote.</span></div></li><li><div><b>Practise a technique</b><span>Try the exercises one step at a time, and keep a daily practice list.</span></div></li></ol><div class="dact"><a class="btn" href="' + root + 'start.html">Start a trail</a><button type="button" class="btn ghost" id="wskip">Explore on my own</button></div>';
+    $('#wskip', d).addEventListener('click', function () { d.close(); });
+    d.addEventListener('close', function () { set('al-welcomed', '1'); });
+    d.showModal();
+  }, 900);
+})();
+
+/* guided practice */
+(function () {
+  if (!canDialog || !$('.skills')) return;
+  var dlg = null, steps = [], idx = 0, id = '', title = '', timer = null, left = 0;
+  function stepsFor(li) {
+    var prose = $('.prose.sk', li), out = [], sub = ''; if (!prose) return out;
+    var h = $$('.skh', prose).filter(function (x) { return /How to practise/i.test(x.textContent); })[0], nodes = [];
+    if (h) { var n = h.nextElementSibling; while (n && !n.classList.contains('skh')) { nodes.push(n); n = n.nextElementSibling; } } else nodes = $$('p', prose);
+    nodes.forEach(function (n) {
+      if (n.classList.contains('sks')) { sub = n.textContent; return; }
+      if (n.matches('ol.pts, ul.pts')) $$('li', n).forEach(function (x) { out.push({ t: sub, h: x.innerHTML }); });
+      else if (n.tagName === 'P') out.push({ t: sub, h: n.innerHTML });
+    });
+    if (!out.length) out = $$('p', prose).map(function (p) { return { t: '', h: p.innerHTML }; });
+    return out;
+  }
+  function beep() { try { var C = window.AudioContext || window.webkitAudioContext, c = new C(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 660; g.gain.value = .12; o.connect(g); g.connect(c.destination); o.start(); setTimeout(function () { o.stop(); c.close(); }, 450); } catch (e) {} if (navigator.vibrate) navigator.vibrate(200); }
+  function stopTimer() { clearInterval(timer); timer = null; }
+  function fmt(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+  function render() {
+    var b = $('.db', dlg); stopTimer();
+    if (idx >= steps.length) {
+      b.innerHTML = '<p class="gtitle">Finished</p><div class="gstep">Well done. Mark it as practised today to keep your streak.</div><div class="dact"><button type="button" class="btn" id="gdone">Mark done today</button><button type="button" class="btn ghost" id="gback">Back to steps</button></div>';
+      $('#gdone', dlg).addEventListener('click', function () { var lg = jget('al-plog', {}), a = lg[today()] || []; if (a.indexOf(id) < 0) a.push(id); lg[today()] = a; jset('al-plog', lg); var pr = jget('al-practice', []); if (pr.indexOf(id) < 0) { pr.push(id); jset('al-practice', pr); } dlg.close(); toast('Logged for today. See it in My library.', [{ label: 'Open', fn: function () { location.href = root + 'mine.html'; } }, { label: 'OK' }]); });
+      $('#gback', dlg).addEventListener('click', function () { idx = steps.length - 1; render(); }); return;
+    }
+    var s = steps[idx], dots = ''; for (var i = 0; i < steps.length; i++) dots += '<i class="' + (i <= idx ? 'on' : '') + '"></i>';
+    b.innerHTML = '<div class="gprog" aria-hidden="true">' + dots + '</div><p class="gtitle">Step ' + (idx + 1) + ' of ' + steps.length + (s.t ? ', ' + esc(s.t) : '') + '</p><div class="gstep">' + s.h + '</div>'
+      + '<div class="dact"><button type="button" class="btn ghost" id="gprev"' + (idx ? '' : ' disabled') + '>Back</button><button type="button" class="btn" id="gnext">' + (idx === steps.length - 1 ? 'Finish' : 'Next step') + '</button></div>'
+      + '<div class="gtime"><label for="gmin" class="vh">Timer length</label><select id="gmin"><option value="0">Timer off</option><option value="1">1 minute</option><option value="3">3 minutes</option><option value="5">5 minutes</option><option value="10">10 minutes</option></select><span class="clock" id="gclock" aria-live="off">--:--</span><button type="button" class="btn ghost sm" id="gstart">Start</button></div>';
+    $('#gprev', dlg).addEventListener('click', function () { idx--; render(); });
+    $('#gnext', dlg).addEventListener('click', function () { idx++; render(); });
+    var sel = $('#gmin', dlg), clk = $('#gclock', dlg), st = $('#gstart', dlg);
+    sel.addEventListener('change', function () { stopTimer(); left = (+sel.value) * 60; clk.textContent = left ? fmt(left) : '--:--'; st.textContent = 'Start'; });
+    st.addEventListener('click', function () {
+      if (timer) { stopTimer(); st.textContent = 'Resume'; return; }
+      if (!left) left = (+sel.value) * 60; if (!left) { sel.focus(); return; }
+      st.textContent = 'Pause'; timer = setInterval(function () { left--; clk.textContent = fmt(Math.max(left, 0)); if (left <= 0) { stopTimer(); st.textContent = 'Start'; beep(); clk.textContent = 'Time'; } }, 1000);
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.gp'); if (!b) return; var li = b.closest('.skill'); id = b.dataset.id; title = $('.sn', li).textContent; steps = stepsFor(li); idx = 0; left = 0;
+    if (!steps.length) return; if (!dlg) { dlg = mkdialog('gp', ''); dlg.addEventListener('close', stopTimer); }
+    $('strong', dlg).textContent = title; render(); dlg.showModal();
+  });
+  document.addEventListener('keydown', function (e) { if (!dlg || !dlg.open) return; if (e.key === 'ArrowRight' && steps.length && idx < steps.length) { idx++; render(); } else if (e.key === 'ArrowLeft' && idx > 0) { idx--; render(); } });
+})();
+
+/* "Next in your trail" bar */
+(function () {
+  var follow = jget('al-follow', []); if (!follow.length) return; var ch = $('.chapter'), main = $('main');
+  var slug = ch ? ch.dataset.book : (location.pathname.match(/\/b\/([^\/]+)\//) || [])[1];
+  if (!slug || !main || (!ch && !$('.bookhead'))) return;
+  for (var i = 0; i < follow.length; i++) {
+    var d = jget('al-trailbooks-' + follow[i], null); if (!d) continue; var k = -1; d.b.forEach(function (x, j) { if (x.s === slug) k = j; }); if (k < 0) continue;
+    var bar = el('div', 'trailbar'), nx = d.b[k + 1];
+    bar.innerHTML = 'Your trail: <a href="' + root + 'start/' + follow[i] + '.html">' + esc(d.t) + '</a> <span>step ' + (k + 1) + ' of ' + d.b.length + '.</span> ' + (nx ? 'Next book: <a href="' + root + 'b/' + nx.s + '/index.html">' + esc(nx.t) + '</a>' : 'This is the last book on the trail.');
+    main.insertBefore(bar, main.firstChild); break;
+  }
+})();
+
+/* chapter: end card, first-use tips */
+(function () {
+  var ch = $('.chapter'); if (!ch) return; var slug = ch.dataset.book, num = +ch.dataset.n;
+  var mr = $('#markread'); if (mr) {
+    function paint() { var on = (jget('al-read-' + slug, [])).indexOf(num) > -1; mr.textContent = on ? 'Marked as read' : 'Mark as read'; mr.setAttribute('aria-pressed', on); }
+    mr.addEventListener('click', function () { var r = jget('al-read-' + slug, []), k = r.indexOf(num); if (k < 0) r.push(num); else r.splice(k, 1); jset('al-read-' + slug, r); paint(); }); paint();
+    var s = el('script'); s.src = root + 'assets/skills-data.js?v=25'; s.onload = function () {
+      var here = 'b/' + slug + '/' + num + '.html', hits = []; Object.keys(window.SKD || {}).forEach(function (k) { if (window.SKD[k][2] === here) hits.push(k); });
+      hits.slice(0, 2).forEach(function (k) { var p = el('p', 'ec-tech'); p.innerHTML = 'Try it: <a href="' + root + 'skills.html#' + k + '">' + esc(window.SKD[k][0]) + '</a>'; $('#endcard').appendChild(p); });
+    }; document.head.appendChild(s);
+  }
+  if (!get('al-tips')) setTimeout(function () { toast('Tip: select any text to highlight it or copy it as a quote. Press Listen to hear the chapter.', [{ label: 'Got it', fn: function () { set('al-tips', '1'); } }], 14000); }, 3000);
+})();
+
+/* install hint (phones, home or My library) */
+(function () {
+  var deferred = null; window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; });
+  try { if (!sessionStorage.getItem('al-sv')) { sessionStorage.setItem('al-sv', '1'); set('al-visits', (+get('al-visits') || 0) + 1); } } catch (e) {}
+  var standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (standalone || get('al-install') || !matchMedia('(max-width:820px)').matches || (+get('al-visits') || 0) < 3 || !($('.hero') || $('#m-last'))) return;
+  setTimeout(function () {
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent), acts = [];
+    if (deferred) acts.push({ label: 'Install', fn: function () { set('al-install', '1'); deferred.prompt(); } });
+    acts.push({ label: deferred ? 'Not now' : 'Got it', fn: function () { set('al-install', '1'); } });
+    toast(ios ? 'Add this library to your Home Screen: tap Share, then Add to Home Screen.' : 'Install the library as an app for quick access and offline reading.', acts, 16000);
+  }, 5000);
+})();
 })();

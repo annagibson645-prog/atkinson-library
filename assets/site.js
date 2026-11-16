@@ -153,7 +153,7 @@ if(tp){var stages=[].slice.call(tp.querySelectorAll('.tstage')),trail=tp.querySe
   document.getElementById('pcount').textContent=doneN+' of '+stages.length+' books finished'+(doneN===stages.length?'. Trail complete.':'');
   var follows=arr('al-follow'),slugP=tp.dataset.path;
   var info={t:tp.dataset.ptitle,done:doneN,n:stages.length,next:nx>-1?stages[nx].dataset.title:'',href:nx>-1?'b/'+stages[nx].dataset.slug+'/'+(get('al-book-'+stages[nx].dataset.slug)||1)+'.html':''};
-  set('al-trailinfo-'+slugP,JSON.stringify(info))}
+  set('al-trailinfo-'+slugP,JSON.stringify(info));set('al-trailbooks-'+slugP,JSON.stringify({t:tp.dataset.ptitle,b:stages.map(function(st){return{s:st.dataset.slug,t:st.dataset.title}})}))}
  function draw(){if(svg)svg.remove();svg=document.createElementNS(svgNS,'svg');svg.setAttribute('class','tline');svg.setAttribute('width',trail.offsetWidth);svg.setAttribute('height',trail.offsetHeight);
   var tr=trail.getBoundingClientRect(),pts=stages.map(function(st){var r=st.querySelector('.tnode').getBoundingClientRect();return[r.left-tr.left+r.width/2,r.top-tr.top+r.height/2]});
   segs=[];for(var i=0;i<pts.length-1;i++){var a=pts[i],b=pts[i+1],my=(a[1]+b[1])/2,d='M'+a[0]+' '+a[1]+' C'+a[0]+' '+my+' '+b[0]+' '+my+' '+b[0]+' '+b[1];
