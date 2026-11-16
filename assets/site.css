@@ -220,3 +220,20 @@ h1,h2,h3{font-weight:700}
 li.band:first-of-type{padding-top:0}
 @media (max-width:560px){.trail{padding-left:62px}.tnode,.tstage.l .tnode,.tstage.r .tnode{left:-62px;width:44px;height:44px}.tstage::after,.band::before{left:-42px}.tstage::before{left:-20px;width:20px;top:21px}.tstage::after{top:22px}.band .bnode{left:-53px}}
 @media (prefers-reduced-motion:reduce){.tstage.isdone::after,.band.isdone::before{animation:none}}
+
+/* neon nodes: one colour per book, cycling like the home page */
+.tstage,.band{--c:var(--brassbg)}
+.tnode .rg{stroke:var(--c)}.tnode .bg{stroke:color-mix(in srgb,var(--c) 28%,var(--rule))}
+.tstage.isdone .tnode{background:var(--c);box-shadow:0 0 16px 2px color-mix(in srgb,var(--c) 75%,transparent)}
+.tstage.isdone .tnode b{color:#0d1024}.tstage.isdone .tnode .bg{stroke:var(--c)}.tstage.isdone .tnode .rg{stroke:#0d1024}
+.tstage.isnext .tnode{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 70%,transparent);animation:pulse 2.2s ease-out infinite}
+.tstage.isnext .tnode b{color:var(--ink)}
+.tstage.isdone::before,.tstage.isnext::before{background:var(--c)}.tstage.isnext::before{box-shadow:0 0 12px var(--c)}
+.tstage.isdone::after,.band.isdone::before{background:linear-gradient(180deg,var(--c) 0%,var(--c) 38%,#fff 50%,var(--c) 62%,var(--c) 100%);background-size:100% 220%;animation:travel 2.8s linear infinite,glowc 2.2s ease-in-out infinite alternate}
+@keyframes glowc{from{box-shadow:0 0 4px 0 color-mix(in srgb,var(--c) 60%,transparent)}to{box-shadow:0 0 16px 4px color-mix(in srgb,var(--c) 85%,transparent)}}
+.tstage.isnext .tcard{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent),0 0 22px color-mix(in srgb,var(--c) 35%,transparent)}
+.tcard[open]{border-color:var(--c)}.tcard>summary::after{color:var(--c)}
+.band .bnode{border-color:var(--c);box-shadow:0 0 14px 2px color-mix(in srgb,var(--c) 70%,transparent);animation:pulse 2.6s ease-out infinite}
+.band .blabel{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.band .bnode,.tstage.isnext .tnode{animation:none}}
+.tstage .pbar i{background:var(--c)}.tstage .pbar{border-color:color-mix(in srgb,var(--c) 40%,var(--rule))}
