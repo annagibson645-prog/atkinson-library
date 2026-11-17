@@ -182,7 +182,7 @@ function stats(){bands.forEach(function(b){var done=0,tot=0,prev=b.previousEleme
   b.querySelector('.bstat').textContent=done+' of '+tot+' finished';
   b.classList.toggle('isdone',!!(prev&&prev.classList.contains('tstage')&&prev.classList.contains('isdone')))})}
 var first=true;
-function sync(){stats();if(first){first=false;stages.forEach(function(st){st.querySelector('details').open=st.classList.contains('isnext')})}}
+function sync(){stats();if(first){first=false;stages.forEach(function(st){st.querySelector('details').open=false})}}
 // run after the main painter has set isdone/isnext
 setTimeout(sync,0);
 tp.addEventListener('change',function(){setTimeout(stats,0)});
