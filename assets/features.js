@@ -424,7 +424,7 @@ window.addEventListener('online', offline); window.addEventListener('offline', o
 /* library grid / list */
 (function () {
   var lw = $('#libwrap'); if (!lw) return;
-  function setMode(m, quiet) { lw.dataset.mode = m; set('al-libmode', m); $$('.seg[data-mode]').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === m); }); if (m === 'grid') $$('#view-theme .tsec, #view-pen .tsec').forEach(function (d) { d.open = true; }); }
+  function setMode(m, quiet) { lw.dataset.mode = m; set('al-libmode', m); $$('.seg[data-mode]').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === m); });  }
   $$('.seg[data-mode]').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
   setMode(get('al-libmode') || 'grid');
 })();
